@@ -1,0 +1,40 @@
+.login {
+  height: 100%;
+  ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+    color: black;
+  }
+  ::ng-deep .mat-form-field-label,
+  ::ng-deep .mat-focused .mat-form-field-label {
+    color: black;
+  }
+  ::ng-deep .mat-input-element::placeholder {
+    color: silver;
+  }
+  .container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    height: inherit;
+  }
+  .title {
+    font-size: 2rem;
+    font-weight: 200;
+    line-height: 0.8rem;
+    @media (max-width: 768px) {
+      font-size: 1.3rem;
+    }
+  }
+  .form {
+    max-width: 450px;
+    padding: 20px;
+    .form-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      .form-field {
+        flex: 1 1 150px;
+      }
+    }
+  }
+}

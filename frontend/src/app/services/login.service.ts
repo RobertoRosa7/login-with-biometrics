@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Constants } from './constants.service';
 
 @Injectable({
@@ -17,11 +17,9 @@ export class LoginService {
   ) {
   }
 
-  // public createUser(payload: CreateUser): Observable<any> {
-  //   return this.http.get(`${this.cons.get('signup')}`, this.setCredentialHeaders(payload)).pipe(
-  //     tap((res: any) => this.setCipherOnLocalStorage(res))
-  //   );
-  // }
+  public checkHealth(): Observable<any> {
+    return this.http.get(`${this.constants.get('signup')}`);
+  }
 
   // public createLogin(payload: CreateLogin): Observable<any> {
   //   return this.http.get(`${this.cons.get('signin')}`, this.setCredentialHeaders(payload)).pipe(
