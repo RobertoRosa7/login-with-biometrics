@@ -1,0 +1,27 @@
+import { environment } from '../../environments/environment';
+
+export class Constants {
+  public readonly paths: any = {
+    checkHealth: '/',
+    signup: '/login/signup',
+    signin: '/login/signin',
+    authCredential: '/login/auth-credential',
+    requestChallenge: '/login/request-challenge',
+    sendWebAuthnResponse: '/login/register-biometric',
+    validateEmailOnLogin: '/login/validate-email-on-login',
+    signInWithBiometric: '/login/sigin-with-biometric',
+  };
+
+  private readonly host: string = environment.api;
+
+  constructor() { }
+
+  public get(key: string, host?: string): string {
+    host = host ? host : this.host;
+    const path = host + this.paths[key];
+    if (path === undefined) {
+      throw new Error('Couldnt find ' + key + ' in paths');
+    }
+    return path;
+  }
+}
