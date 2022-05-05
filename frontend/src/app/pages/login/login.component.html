@@ -1,6 +1,6 @@
 <section class="login">
   <div class="container">
-    <form [formGroup]="form" (submit)="onSubmit($event)" class="form">
+    <form [formGroup]="form" class="form" (submit)="onSubmit($event)">
       <div style="margin-bottom: 16px;">
         <h2 class="title">Login com Biometria - Angular</h2>
         <small (send)="onSend($event)" hasBiometrics></small>
@@ -15,7 +15,9 @@
               <mat-error *ngIf="form.get('email')?.hasError('required')">E-mail é obrigatório</mat-error>
               <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail é inválido</mat-error>
               <mat-error *ngIf="verifyError$ | async as response">{{response.error.message}}</mat-error>
-              <mat-hint *ngIf="verifySuccess$ | async as response">{{response.message}}}</mat-hint>
+              <mat-hint style="color: black;" *ngIf="verifySuccess$ | async as response">
+                {{response.message}}}
+              </mat-hint>
             </mat-form-field>
           </div>
         </mat-tab>
@@ -33,6 +35,10 @@
               <mat-error *ngIf="form.get('password')?.hasError('pattern')">
                 Senha deve ter letras maiúsculas | minúsculas | especiais | números
               </mat-error>
+              <mat-error *ngIf="loginWithPasswordError$ | async as response">{{response.error.message}}</mat-error>
+              <mat-hint style="color: black;" *ngIf="loginWithPasswordSuccess$ | async as response">
+                {{response.message}}
+              </mat-hint>
             </mat-form-field>
           </div>
 

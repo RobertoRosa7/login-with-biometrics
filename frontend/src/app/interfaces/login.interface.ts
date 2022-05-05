@@ -4,6 +4,8 @@ export interface LOGIN {
   checkHealth: boolean;
   response: VERIFY_EMAIL_RESPONSE | null;
   error: HttpErrorResponse | null
+  loginWithPasswordSuccess: any | null;
+  loginWithPasswordError: any | null;
 }
 export interface VERIFY_EMAIL {
   email: string

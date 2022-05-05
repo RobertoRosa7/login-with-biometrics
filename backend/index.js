@@ -49,7 +49,7 @@ app.get('/login/create-challenge', (req, res) => {
   });
 
   session.user.challenge = createChallenge.challenge
-  
+
   return res.status(200).json({
     error: false,
     message: "publicKey criada com sucesso",

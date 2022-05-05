@@ -32,5 +32,5 @@ export const loginWithPasswordSuccess = createAction(
 );
 
 export const loginWithPasswordError = createAction(
-  LoginTypes.loginWithPasswordSuccess, props<{ payload: any }>()
+  LoginTypes.loginWithPasswordError, props<{ payload: any }>()
 );
