@@ -367,10 +367,15 @@ const generateServerGetAssertion = (authenticators) => {
   }
 }
 
+const createUserSession = (email) => {
+  return { email, name: 'anonimous', id: randomBase64URLBuffer(16) };
+}
+
 module.exports = {
   generateServerMakeRequest,
   verifyAuthenticatorAttestationResponse,
   verifyAuthenticatorAssertionResponse,
   generateServerGetAssertion,
-  randomBase64URLBuffer
+  randomBase64URLBuffer,
+  createUserSession
 }

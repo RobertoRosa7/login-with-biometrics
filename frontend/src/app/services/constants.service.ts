@@ -7,7 +7,7 @@ export class Constants {
     signin: '/login/signin',
     verifyEmail: '/login/verify-email',
     requestChallenge: '/login/request-challenge',
-    sendWebAuthnResponse: '/login/register-biometric',
+    loginWithPassword: '/login/login-with-password',
     validateEmailOnLogin: '/login/validate-email-on-login',
     signInWithBiometric: '/login/sigin-with-biometric',
   };

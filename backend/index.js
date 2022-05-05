@@ -22,15 +22,19 @@ app.get('/', (req, res) => {
   return res.status(200).json({ error: false, message: "it's working" });
 });
 
-app.post('/login/signup', async (req, res) => {
+app.post('/login/login-with-password', async (req, res) => {
   if (!req.body || !req.body.email || !req.body.password) {
     return res.status(405).json({ error: true, message: "acesso não permitido" });
   }
 
-  const { email, name } = req.body;
-  const id = utils.randomBase64URLBuffer(16);
-  session.user = { email, name: name || 'anonimous', id };
-  return res.status(200).json({ error: false, message: "it's working", user: session.user });
+  const { email } = req.body;
+
+  if (session.user.email !== email) {
+    return res.status(405).json({ error: true, message: 'e-mail não cadastrado' });
+  }
+
+  session.user = utils.createUserSession(email);
+  return res.status(200).json({ error: false, message: "login realizado com sucesso.", user: session.user });
 });
 
 app.get('/login/create-challenge', (req, res) => {
@@ -43,10 +47,12 @@ app.get('/login/create-challenge', (req, res) => {
     id: session.user.id,
     name: session.user.email
   });
+
   session.user.challenge = createChallenge.challenge
+  
   return res.status(200).json({
     error: false,
-    message: "it's working",
+    message: "publicKey criada com sucesso",
     user: session.user,
     createChallenge,
   });
@@ -62,11 +68,10 @@ app.post('/login/verify-email', async (req, res) => {
     return res.status(405).json({ error: true, message: 'Nenhum email recebido' });
   }
 
-  const { email, name } = req.body;
+  const { email } = req.body;
 
   if (!session.user) {
-    const id = utils.randomBase64URLBuffer(16);
-    session.user = { email, name: name || 'anonimous', id };
+    session.user = utils.createUserSession(email);
   }
 
   return res.status(200).json({ error: false, message: "it's working", user: session.user });

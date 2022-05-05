@@ -1,16 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { VERIFY_EMAIL, VERIFY_EMAIL_RESPONSE } from '../interfaces/login.interface';
+import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL, VERIFY_EMAIL_RESPONSE } from '../interfaces/login.interface';
 import { Constants } from './constants.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LoginService {
-  private isLogin$: BehaviorSubject<any> = new BehaviorSubject<any>(false);
-  private isUser$: BehaviorSubject<any> = new BehaviorSubject<any>(null);
-  private accessAuthorized$: BehaviorSubject<any> = new BehaviorSubject<any>(false);
+  private authorized$: BehaviorSubject<any> = new BehaviorSubject<any>(false);
 
   constructor(
     private http: HttpClient,
@@ -18,12 +16,12 @@ export class LoginService {
   ) {
   }
 
-  public checkHealth(): Observable<any> {
-    return this.http.get(`${this.constants.get('signup')}`);
-  }
-
   public verifyEmail(payload: VERIFY_EMAIL): Observable<VERIFY_EMAIL_RESPONSE> {
     return this.http.post<VERIFY_EMAIL_RESPONSE>(this.constants.get('verifyEmail'), payload);
+  }
+
+  public loginWithPassword(payload: LOGIN_WITH_PASSWORD): Observable<any> {
+    return this.http.post(this.constants.get('loginWithPassword'), payload);
   }
 
   // public createLogin(payload: CreateLogin): Observable<any> {
