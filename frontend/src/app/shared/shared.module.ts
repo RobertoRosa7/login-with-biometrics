@@ -10,6 +10,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClientModule } from '@angular/common/http';
 import { Constants } from '../services/constants.service';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { Constants } from '../services/constants.service';
     MatButtonModule,
     MatTabsModule,
     MatIconModule,
-    HttpClientModule
+    MatSnackBarModule,
+    HttpClientModule,
   ],
   exports: [
     CommonModule,
@@ -38,6 +40,7 @@ import { Constants } from '../services/constants.service';
     BiometricsDirective,
     MatTabsModule,
     MatIconModule,
+    MatSnackBarModule,
     HttpClientModule
   ],
   providers: [Constants]

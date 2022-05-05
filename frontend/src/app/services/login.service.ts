@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL, VERIFY_EMAIL_RESPONSE } from '../interfaces/login.interface';
 import { Constants } from './constants.service';
 
@@ -21,7 +21,25 @@ export class LoginService {
   }
 
   public loginWithPassword(payload: LOGIN_WITH_PASSWORD): Observable<any> {
-    return this.http.post(this.constants.get('loginWithPassword'), payload);
+    return this.http.post(this.constants.get('loginWithPassword'), payload).pipe(
+      tap((resp: any) => {
+        if (resp) {
+          this.setUserOnStorageAfterLogin(resp.user);
+        }
+      })
+    );
+  }
+
+  public isAuthenticated(): Observable<boolean> {
+    if (localStorage.getItem('sessionUser')) {
+      this.authorized$.next(true);
+    }
+
+    return this.authorized$.asObservable();
+  }
+
+  private setUserOnStorageAfterLogin(user: any): void {
+    localStorage.setItem('sessionUser', JSON.stringify(user));
   }
 
   // public createLogin(payload: CreateLogin): Observable<any> {
@@ -209,13 +227,7 @@ export class LoginService {
   //   this.accessAuthorized$.next(true);
   // }
 
-  // private setUserOnStorageAfterLogin(user: any): void {
-  //   this.localstorageService.set('user', user.data);
-  //   this.localstorageService.set('token', { access_token: user.data.token });
-  //   this.localstorageService.set('sessionFinished', { sessionFinished: false });
-  //   this.isLogin$.next(true);
-  //   this.isUser$.next(user.data);
-  // }
+
 
   // private setCleanAfterLogout(message?: any): void {
   //   this.localstorageService.remove('user');
