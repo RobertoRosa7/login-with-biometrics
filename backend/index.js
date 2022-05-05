@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/login/signup', async (req, res) => {
-  if (!req.body || !req.body.email) {
+  if (!req.body || !req.body.email || !req.body.password) {
     return res.status(405).json({ error: true, message: "acesso não permitido" });
   }
 
@@ -53,9 +53,23 @@ app.get('/login/create-challenge', (req, res) => {
 });
 
 app.post('/login/signin', async (req, res) => {
-
-
   return res.status(200).json({ error: false, message: "it's working", user: session.user, createChallenge });
+});
+
+app.post('/login/verify-email', async (req, res) => {
+
+  if (!req.body || !req.body.email) {
+    return res.status(405).json({ error: true, message: 'Nenhum email recebido' });
+  }
+
+  const { email, name } = req.body;
+
+  if (!session.user) {
+    const id = utils.randomBase64URLBuffer(16);
+    session.user = { email, name: name || 'anonimous', id };
+  }
+
+  return res.status(200).json({ error: false, message: "it's working", user: session.user });
 });
 
 app.listen(app.get('port'), () => {

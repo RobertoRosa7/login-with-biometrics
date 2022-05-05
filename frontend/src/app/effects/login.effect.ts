@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { catchError, map, mergeMap } from 'rxjs/operators';
-import { checkHealthResponse } from '../actions/login.action';
+import { checkHealthResponse, verifyEmailError, verifyEmailSuccess } from '../actions/login.action';
 import { LoginService } from '../services/login.service';
 import { LoginTypes } from '../types/login.type';
 
@@ -16,13 +16,20 @@ export class LoginEffect {
   public checkHealth$ = createEffect(() =>
     this.action.pipe(ofType(LoginTypes.checkHealth),
       mergeMap(() => this.loginService.checkHealth().pipe(catchError((e) => of(e)))),
+      map((payload) => checkHealthResponse({ payload })),
+    ));
+
+  public verifyEmail$ = createEffect(() =>
+    this.action.pipe(ofType(LoginTypes.verifyEmail),
+      mergeMap(({ payload }) => this.loginService.verifyEmail(payload).pipe(catchError((e) => of(e)))),
       map((payload) => {
         if (payload instanceof HttpErrorResponse) {
-          return checkHealthResponse({ payload });
+          return verifyEmailError({ payload });
         }
-        return checkHealthResponse({ payload });
+        return verifyEmailSuccess({ payload });
       }),
     ));
+
 
   constructor(
     private action: Actions,

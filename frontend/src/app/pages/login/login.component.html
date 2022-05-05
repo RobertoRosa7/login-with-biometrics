@@ -1,22 +1,65 @@
 <section class="login">
   <div class="container">
-    <form (submit)="onSubmit($event)" class="form">
+    <form [formGroup]="form" (submit)="onSubmit($event)" class="form">
       <div style="margin-bottom: 16px;">
         <h2 class="title">Login com Biometria - Angular</h2>
-        <small (send)="onSend($event)" hasBiometrics class="bio-on"></small>
+        <small (send)="onSend($event)" hasBiometrics></small>
       </div>
 
-      <div class="form-group">
-        <mat-form-field floatLabel="always" appearance="outline" class="form-field">
-          <mat-label>Email</mat-label>
-          <input name="email" type="email" required matInput placeholder="E-mail">
-        </mat-form-field>
-        <mat-form-field floatLabel="always" appearance="outline" class="form-field">
-          <mat-label>Nome</mat-label>
-          <input type="text" name="name" matInput placeholder="Nome">
-        </mat-form-field>
+      <mat-tab-group (selectedTabChange)="onTabChange()" [selectedIndex]="indexFormLogin">
+        <mat-tab>
+          <div class="form-group">
+            <mat-form-field floatLabel="always" appearance="outline" class="form-field">
+              <mat-label>Email</mat-label>
+              <input formControlName="email" name="email" type="email" required matInput placeholder="E-mail">
+              <mat-error *ngIf="form.get('email')?.hasError('required')">E-mail é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail é inválido</mat-error>
+              <mat-error *ngIf="verifyError$ | async as response">{{response.error.message}}</mat-error>
+              <mat-hint *ngIf="verifySuccess$ | async as response">{{response.message}}}</mat-hint>
+            </mat-form-field>
+          </div>
+        </mat-tab>
+
+        <mat-tab>
+          <div class="form-group">
+            <mat-form-field floatLabel="always" appearance="outline" class="form-field">
+              <mat-label>Senha</mat-label>
+              <input [type]="changeTexts ? 'password' : 'text'" minlength="6" formControlName="password" name="password"
+                required matInput placeholder="Senha">
+              <mat-icon style="cursor: pointer" (click)="changeTexts = !changeTexts" matSuffix [svgIcon]="changeTexts ?
+                    'visibility_off_black_24dp' : 'visibility_black_24dp'"></mat-icon>
+              <mat-error *ngIf="form.get('password')?.hasError('required')">Senha é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('password')?.hasError('minLength')">Senha é tamanho da senha</mat-error>
+              <mat-error *ngIf="form.get('password')?.hasError('pattern')">
+                Senha deve ter letras maiúsculas | minúsculas | especiais | números
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <small style="cursor: pointer; text-decoration: underline;" (click)="indexFormLogin=0">
+            Voltar ao e-mail
+          </small>
+        </mat-tab>
+      </mat-tab-group>
+
+      <div class="container-button">
+        <ng-container [ngSwitch]="indexFormLogin">
+          <ng-container *ngSwitchCase="0">
+            <button (click)="next()" [disabled]="form.get('email')?.invalid" type="button" mat-raised-button>
+              Entrar
+            </button>
+          </ng-container>
+          <ng-container *ngSwitchCase="1">
+            <button (click)="loginWithPassword()" [disabled]="form.invalid" type="submit" type="button" color="primary"
+              mat-raised-button>
+              Entrar com Senha
+            </button>
+            <button (click)="loginWithBiometrics()" [disabled]="form.get('email')?.invalid" type="button"
+              mat-raised-button>
+              Cadastrar Biometria</button>
+          </ng-container>
+        </ng-container>
       </div>
-      <button type="submit" mat-raised-button>cadastrar</button>
     </form>
   </div>
 </section>

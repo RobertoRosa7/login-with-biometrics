@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { VERIFY_EMAIL, VERIFY_EMAIL_RESPONSE } from '../interfaces/login.interface';
 import { Constants } from './constants.service';
 
 @Injectable({
@@ -19,6 +20,10 @@ export class LoginService {
 
   public checkHealth(): Observable<any> {
     return this.http.get(`${this.constants.get('signup')}`);
+  }
+
+  public verifyEmail(payload: VERIFY_EMAIL): Observable<VERIFY_EMAIL_RESPONSE> {
+    return this.http.post<VERIFY_EMAIL_RESPONSE>(this.constants.get('verifyEmail'), payload);
   }
 
   // public createLogin(payload: CreateLogin): Observable<any> {

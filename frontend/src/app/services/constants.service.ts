@@ -5,7 +5,7 @@ export class Constants {
     checkHealth: '/',
     signup: '/login/signup',
     signin: '/login/signin',
-    authCredential: '/login/auth-credential',
+    verifyEmail: '/login/verify-email',
     requestChallenge: '/login/request-challenge',
     sendWebAuthnResponse: '/login/register-biometric',
     validateEmailOnLogin: '/login/validate-email-on-login',
