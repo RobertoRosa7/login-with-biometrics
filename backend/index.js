@@ -74,7 +74,7 @@ app.post('/login/verify-email', async (req, res) => {
     session.user = utils.createUserSession(email);
   }
 
-  return res.status(200).json({ error: false, message: "it's working", user: session.user });
+  return res.status(200).json({ error: false, message: "E-mail encontrado", user: session.user });
 });
 
 app.listen(app.get('port'), () => {

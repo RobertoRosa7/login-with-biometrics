@@ -6,8 +6,34 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subscription, tap } from 'rxjs';
 import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL_RESPONSE } from 'src/app/interfaces/login.interface';
-import { verifyEmail, loginWithPassword } from '../../actions/login.action';
-import { selectError, selectLoginWithPasswordError, selectLoginWithPasswordSuccess, selectSuccess } from '../../selectors/login.selector';
+import { loginWithPassword, signinWithPassword, verifyEmail } from '../../actions/login.action';
+import { selectError, selectLoginWithPasswordError, selectLoginWithPasswordSuccess, selectSigninWithPasswordError, selectSigninWithPasswordSuccess, selectSuccess } from '../../selectors/login.selector';
+
+export class CustomValidators {
+  constructor() {
+  }
+
+  public static checkPassword(controlName: string, matchingControlName: string): any {
+    return {
+      validator: (formGroup: FormGroup) => {
+        const control = formGroup.controls[controlName];
+        const matchingControl = formGroup.controls[matchingControlName];
+
+        if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
+          return;
+        }
+
+        if (control.value !== matchingControl.value) {
+          matchingControl.setErrors({ mustMatch: true });
+        } else {
+          matchingControl.setErrors(null);
+        }
+
+        return null;
+      }
+    }
+  }
+}
 
 @Component({
   selector: 'app-login',
@@ -23,6 +49,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   public verifySuccess$!: Observable<VERIFY_EMAIL_RESPONSE>;
   public loginWithPasswordError$!: Observable<HttpErrorResponse>;
   public loginWithPasswordSuccess$!: Observable<any>;
+  public signinWithPasswordSuccess$!: Observable<any>
+  public signinWithPasswordError$!: Observable<any>;
+  public isCreate: boolean = true;
+  public textTitle = 'Login com Biometria - Angular';
+  public isPasswordSame!: boolean;
 
   public form: FormGroup = this.formBuilder.group({
     email: ['', [
@@ -34,8 +65,15 @@ export class LoginComponent implements OnInit, OnDestroy {
       Validators.required,
       Validators.minLength(6),
       Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*]).{8,}$/)
+    ]],
+    confirm_password: ['', [
+      Validators.required,
+      Validators.minLength(6),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*]).{8,}$/)
     ]]
-  });
+  },
+    CustomValidators.checkPassword('password', 'confirm_password')
+  );
 
   constructor(
     private title: Title,
@@ -55,21 +93,23 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onSubmit(event: SubmitEvent): void {
+  public onSubmit(event: SubmitEvent, isCreate: boolean): void {
     event.preventDefault();
     if (this.form.valid) {
-      this.signup({
+      const payload: LOGIN_WITH_PASSWORD = {
         email: this.cleanEmail(this.form.value.email),
         password: this.form.value.password
-      });
+      }
+      isCreate ? this.signup(payload) : this.signin(payload);
     }
   }
 
-  public loginWithPassword(): void {
-    this.signup({
+  public loginWithPassword(isCreate: boolean): void {
+    const payload: LOGIN_WITH_PASSWORD = {
       email: this.cleanEmail(this.form.value.email),
       password: this.form.value.password
-    });
+    }
+    isCreate ? this.signup(payload) : this.signin(payload);
   }
 
   public onSend(event: boolean): void {
@@ -77,6 +117,14 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   public onTabChange(): void {
+    switch (this.indexFormLogin) {
+      case 0:
+        this.textTitle = 'Login com Biometria - Angular';
+        break;
+      case 1:
+        this.textTitle = 'Entrar com senha ou biometria';
+        break;
+    }
   }
 
   public loginWithBiometrics(): void {
@@ -89,7 +137,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.verifySuccess$ = this.store.select(selectSuccess).pipe(
       tap((response: VERIFY_EMAIL_RESPONSE) => {
         if (response && response.user) {
-          console.log('login com senha');
+          this.form.valueChanges.subscribe(() => this.form.get('confirm_password')?.setErrors(null))
+          this.isCreate = false;
           this.indexFormLogin = 1;
           this.detectChange.detectChanges();
 
@@ -102,7 +151,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.verifyError$ = this.store.select(selectError).pipe(
       tap((resp: HttpErrorResponse) => {
         if (resp) {
-          this.form.get('email')?.setErrors({ notFound: true });
+          this.isCreate = true;
+          this.indexFormLogin = 1;
+          this.detectChange.detectChanges();
         }
       })
     );
@@ -126,6 +177,26 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  private signin(payload: LOGIN_WITH_PASSWORD): void {
+    this.store.dispatch(signinWithPassword({ payload }));
+
+    this.signinWithPasswordError$ = this.store.select(selectSigninWithPasswordError).pipe(
+      tap((resp: HttpErrorResponse) => {
+        if (resp) {
+          this.form.get('password')?.setErrors({ userNotFound: true });
+        }
+      })
+    )
+
+    this.signinWithPasswordSuccess$ = this.store.select(selectSigninWithPasswordSuccess).pipe(
+      tap((resp: any) => {
+        if (resp && !resp.error) {
+          setTimeout(() => this.router.navigateByUrl('/dashboard'), 1000);
+        }
+      })
+    )
   }
 
   private cleanEmail(text: string): string {

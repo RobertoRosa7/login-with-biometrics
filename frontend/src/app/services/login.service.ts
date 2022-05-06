@@ -1,8 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL, VERIFY_EMAIL_RESPONSE } from '../interfaces/login.interface';
+import { AuthService } from './auth.service';
 import { Constants } from './constants.service';
+import { IndexdbService } from './indexedb.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,34 +16,86 @@ export class LoginService {
   constructor(
     private http: HttpClient,
     private constants: Constants,
+    private router: Router,
+    private indexedbService: IndexdbService,
+    private authService: AuthService
   ) {
   }
 
-  public verifyEmail(payload: VERIFY_EMAIL): Observable<VERIFY_EMAIL_RESPONSE> {
-    return this.http.post<VERIFY_EMAIL_RESPONSE>(this.constants.get('verifyEmail'), payload);
+  public verifyEmail(payload: VERIFY_EMAIL): Observable<any> {
+    const id = this.authService.toBase64(payload.email)
+    return this.indexedbService.getById(id).pipe(
+      map((user) => {
+        if (!user) {
+          return new HttpErrorResponse({ error: { message: 'Não cadastrado', error: true } });
+        }
+        return { user, message: 'E-mail encontrado', error: false }
+      })
+    )
+
+    // return this.http.post<VERIFY_EMAIL_RESPONSE>(this.constants.get('verifyEmail'), payload);
   }
 
   public loginWithPassword(payload: LOGIN_WITH_PASSWORD): Observable<any> {
-    return this.http.post(this.constants.get('loginWithPassword'), payload).pipe(
-      tap((resp: any) => {
-        if (resp) {
-          this.setUserOnStorageAfterLogin(resp.user);
+    return this.indexedbService.create({
+      email: payload.email,
+      id: this.authService.toBase64(payload.email),
+      password: this.authService.b64encode(
+        this.authService.b64decode(
+          this.authService.toBase64(payload.password)
+        )
+      )
+    }).pipe(
+      map(user => {
+        if (!user) {
+          return new HttpErrorResponse({ error: { message: 'Não foi possível cadastrar', error: true } });
         }
+        this.setUserOnStorageAfterLogin(user);
+        return { user, message: "cadastro realizado com sucesso", error: false }
       })
-    );
+    )
+  }
+
+  public signinWithPassword(payload: LOGIN_WITH_PASSWORD): Observable<any> {
+    const id = this.authService.toBase64(payload.email);
+    return this.indexedbService.getById(id).pipe(
+      map((user) => {
+        if (!user) {
+          return new HttpErrorResponse({ error: { message: 'Não cadastrado', error: true } });
+        }
+        const password = this.authService.b64encode(
+          this.authService.b64decode(
+            this.authService.toBase64(payload.password)
+          )
+        )
+
+        if (user.password !== password) {
+          return new HttpErrorResponse({ error: { message: 'credencial inválida', error: true } });
+        }
+        
+        this.setUserOnStorageAfterLogin(user);
+        return { user, message: 'login realizado com sucesso', error: false }
+      })
+    )
   }
 
   public isAuthenticated(): Observable<boolean> {
     if (localStorage.getItem('sessionUser')) {
       this.authorized$.next(true);
     }
-
     return this.authorized$.asObservable();
+  }
+
+  public logout(): void {
+    localStorage.removeItem('sessionUser');
+    this.authorized$.next(false);
+    this.router.navigateByUrl('/');
   }
 
   private setUserOnStorageAfterLogin(user: any): void {
     localStorage.setItem('sessionUser', JSON.stringify(user));
   }
+
 
   // public createLogin(payload: CreateLogin): Observable<any> {
   //   return this.http.get(`${this.cons.get('signin')}`, this.setCredentialHeaders(payload)).pipe(

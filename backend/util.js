@@ -4,6 +4,7 @@ const cbor = require('cbor');
 const { Certificate } = require('@fidm/x509');
 const iso_3166_1 = require('iso-3166-1');
 const NodeRSA = require('node-rsa');
+
 const COSEKEYS = {
   'kty': 1,
   'alg': 3,
@@ -332,14 +333,6 @@ const verifyAuthenticatorAssertionResponse = (webauthnResponse, authr, enableLog
     response.verified = verifySignature(signature, signatureBase, publicKey);
   }
   return response;
-}
-
-const findAuthr = (credID, authenticators) => {
-  for (const authr in authenticators) {
-    if (authenticators[authr] === credID)
-      return authenticators
-  }
-  throw new Error(`Unknown authenticator with credID ${credID}!`)
 }
 
 const parseGetAssertAuthData = (buffer) => {

@@ -1,8 +1,8 @@
 <section class="login">
   <div class="container">
-    <form [formGroup]="form" class="form" (submit)="onSubmit($event)">
+    <form [formGroup]="form" class="form" (submit)="onSubmit($event, isCreate)">
       <div style="margin-bottom: 16px;">
-        <h2 class="title">Login com Biometria - Angular</h2>
+        <h2 class="title">{{textTitle}}</h2>
         <small (send)="onSend($event)" hasBiometrics></small>
       </div>
 
@@ -16,7 +16,7 @@
               <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail é inválido</mat-error>
               <mat-error *ngIf="verifyError$ | async as response">{{response.error.message}}</mat-error>
               <mat-hint style="color: black;" *ngIf="verifySuccess$ | async as response">
-                {{response.message}}}
+                {{response.message}}
               </mat-hint>
             </mat-form-field>
           </div>
@@ -39,6 +39,27 @@
               <mat-hint style="color: black;" *ngIf="loginWithPasswordSuccess$ | async as response">
                 {{response.message}}
               </mat-hint>
+              <mat-error *ngIf="signinWithPasswordError$ | async as response">{{response.error.message}}</mat-error>
+              <mat-hint style="color: black;" *ngIf="signinWithPasswordSuccess$ | async as response">
+                {{response.message}}
+              </mat-hint>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="isCreate" floatLabel="always" appearance="outline" class="form-field">
+              <mat-label>Confirmar senha</mat-label>
+              <input [type]="changeTexts ? 'password' : 'text'" minlength="6" formControlName="confirm_password"
+                name="confirm_password" required matInput placeholder="Senha">
+              <mat-icon style="cursor: pointer" (click)="changeTexts = !changeTexts" matSuffix [svgIcon]="changeTexts ?
+                    'visibility_off_black_24dp' : 'visibility_black_24dp'"></mat-icon>
+              <mat-error *ngIf="form.get('confirm_password')?.hasError('required')">Senha é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('confirm_password')?.hasError('minLength')">Senha é tamanho da senha
+              </mat-error>
+              <mat-error *ngIf="form.get('confirm_password')?.hasError('pattern')">
+                Senha deve ter letras maiúsculas | minúsculas | especiais | números
+              </mat-error>
+              <mat-error *ngIf="form.get('confirm_password')?.hasError('mustMatch')">
+                As senhas devem ser iguais
+              </mat-error>
             </mat-form-field>
           </div>
 
@@ -56,8 +77,8 @@
             </button>
           </ng-container>
           <ng-container *ngSwitchCase="1">
-            <button (click)="loginWithPassword()" [disabled]="form.invalid" type="submit" type="button" color="primary"
-              mat-raised-button>
+            <button (click)="loginWithPassword(isCreate)" [disabled]="form.invalid" type="submit" type="button"
+              color="primary" mat-raised-button>
               Entrar com Senha
             </button>
             <button (click)="loginWithBiometrics()" [disabled]="form.get('email')?.invalid" type="button"

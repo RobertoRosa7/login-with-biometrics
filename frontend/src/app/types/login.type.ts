@@ -10,4 +10,8 @@ export enum LoginTypes {
   loginWithPasswordSuccess = '@login:LOGIN_WITH_PASSWORD_SUCCESS',
   loginWithPasswordError = '@login:LOGIN_WITH_PASSWORD_ERROR',
 
+  signinWithPassword = '@login:SIGNIN_WITH_PASSWORD',
+  signinWithPasswordSuccess = '@login:SIGNIN_WITH_PASSWORD_SUCCESS',
+  signinWithPasswordError = '@login:SIGNIN_WITH_PASSWORD_ERROR',
+
 }

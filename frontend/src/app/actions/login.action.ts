@@ -34,3 +34,15 @@ export const loginWithPasswordSuccess = createAction(
 export const loginWithPasswordError = createAction(
   LoginTypes.loginWithPasswordError, props<{ payload: any }>()
 );
+
+export const signinWithPassword = createAction(
+  LoginTypes.signinWithPassword, props<{ payload: any }>()
+);
+
+export const signinWithPasswordSuccess = createAction(
+  LoginTypes.signinWithPasswordSuccess, props<{ payload: any }>()
+);
+
+export const signinWithPasswordError = createAction(
+  LoginTypes.signinWithPasswordError, props<{ payload: any }>()
+);
