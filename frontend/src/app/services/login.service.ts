@@ -1,8 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
-import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL, VERIFY_EMAIL_RESPONSE } from '../interfaces/login.interface';
+import { BehaviorSubject, map, Observable, of } from 'rxjs';
+import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL } from '../interfaces/login.interface';
 import { AuthService } from './auth.service';
 import { Constants } from './constants.service';
 import { IndexdbService } from './indexedb.service';
@@ -23,7 +23,7 @@ export class LoginService {
   }
 
   public verifyEmail(payload: VERIFY_EMAIL): Observable<any> {
-    const id = this.authService.toBase64(payload.email)
+    const id = this.authService.toBase64(payload.email);
     return this.indexedbService.getById(id).pipe(
       map((user) => {
         if (!user) {
@@ -72,7 +72,7 @@ export class LoginService {
         if (user.password !== password) {
           return new HttpErrorResponse({ error: { message: 'credencial inválida', error: true } });
         }
-        
+
         this.setUserOnStorageAfterLogin(user);
         return { user, message: 'login realizado com sucesso', error: false }
       })
@@ -92,10 +92,35 @@ export class LoginService {
     this.router.navigateByUrl('/');
   }
 
+  public createCredential(email: string): Observable<any> {
+    const publicKey = this.authService.createPublicKey({
+      displayName: 'Anonimous',
+      id: this.authService.toBase64(email),
+      username: email
+    });
+    return of(publicKey)
+  }
+
+  public async createOptionsCredential(publicKey: CredentialCreationOptions): Promise<any> {
+    const error = new HttpErrorResponse({ error: { message: 'Não foi possível cadastrar', error: true } });
+    try {
+      const credential = await navigator.credentials.create(this.authService.preFormatMakeCredReq(publicKey));
+      if (!credential) {
+        throw error;
+      }
+      return credential;
+    } catch (e) {
+      throw error;
+    }
+  }
+
+  public saveCredential(credential:any) {
+    this.authService.verifyAttestation(credential);
+  }
+
   private setUserOnStorageAfterLogin(user: any): void {
     localStorage.setItem('sessionUser', JSON.stringify(user));
   }
-
 
   // public createLogin(payload: CreateLogin): Observable<any> {
   //   return this.http.get(`${this.cons.get('signin')}`, this.setCredentialHeaders(payload)).pipe(
@@ -207,19 +232,6 @@ export class LoginService {
   //       this.returnHeaderTokenClient(access_token)
   //     )),
   //   )
-  // }
-
-  // public async createCredential(publicKey: CredentialCreationOptions): Promise<any> {
-  //   const error = new HttpErrorResponse({ error: { message: 'Não foi possível cadastrar', error: true } });
-  //   try {
-  //     const credential = await navigator.credentials.create(this.preFormatMakeCredReq(publicKey));
-  //     if (!credential) {
-  //       throw error;
-  //     }
-  //     return credential;
-  //   } catch (e) {
-  //     throw error;
-  //   }
   // }
 
   // public async getCredential(client: CLIENT) {

@@ -46,3 +46,11 @@ export const signinWithPasswordSuccess = createAction(
 export const signinWithPasswordError = createAction(
   LoginTypes.signinWithPasswordError, props<{ payload: any }>()
 );
+
+export const createCredential = createAction(
+  LoginTypes.createCredential, props<{ payload: any }>()
+);
+
+export const createCredentialSuccess = createAction(
+  LoginTypes.createCredentialSuccess, props<{ payload: any }>()
+)

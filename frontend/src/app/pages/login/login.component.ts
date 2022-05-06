@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subscription, tap } from 'rxjs';
 import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL_RESPONSE } from 'src/app/interfaces/login.interface';
-import { loginWithPassword, signinWithPassword, verifyEmail } from '../../actions/login.action';
+import { createCredential, loginWithPassword, signinWithPassword, verifyEmail } from '../../actions/login.action';
 import { selectError, selectLoginWithPasswordError, selectLoginWithPasswordSuccess, selectSigninWithPasswordError, selectSigninWithPasswordSuccess, selectSuccess } from '../../selectors/login.selector';
 
 export class CustomValidators {
@@ -128,7 +128,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   public loginWithBiometrics(): void {
-    console.log('login com biometria', this.cleanEmail(this.form.value.email));
+    console.log('login com biometria',);
+    this.store.dispatch(createCredential({ payload: this.cleanEmail(this.form.value.email) }));
   }
 
   public next(): void {

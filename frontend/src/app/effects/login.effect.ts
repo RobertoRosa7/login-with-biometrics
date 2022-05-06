@@ -2,8 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import { catchError, map, mergeMap } from 'rxjs/operators';
-import { loginWithPasswordError, loginWithPasswordSuccess, signinWithPasswordError, signinWithPasswordSuccess, verifyEmailError, verifyEmailSuccess } from '../actions/login.action';
+import { catchError, exhaustMap, map, mergeMap } from 'rxjs/operators';
+import { createCredentialSuccess, loginWithPasswordError, loginWithPasswordSuccess, signinWithPasswordError, signinWithPasswordSuccess, verifyEmailError, verifyEmailSuccess } from '../actions/login.action';
 import { LoginService } from '../services/login.service';
 import { LoginTypes } from '../types/login.type';
 
@@ -43,6 +43,18 @@ export class LoginEffect {
         return signinWithPasswordSuccess({ payload });
       }),
     ));
+
+  public createCredential$ = createEffect(() =>
+    this.action.pipe(ofType(LoginTypes.createCredential),
+      mergeMap(({ payload }) => this.loginService.createCredential(payload).pipe(catchError((e) => of(e)))),
+      exhaustMap((payload: any) => this.loginService.createOptionsCredential(payload)),
+      map((payload) => {
+        this.loginService.saveCredential(payload);
+
+        return createCredentialSuccess({ payload });
+      }),
+    ));
+
 
   constructor(
     private action: Actions,
