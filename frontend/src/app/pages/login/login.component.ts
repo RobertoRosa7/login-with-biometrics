@@ -129,7 +129,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   public loginWithBiometrics(): void {
     console.log('login com biometria',);
-    this.store.dispatch(createCredential({ payload: this.cleanEmail(this.form.value.email) }));
+    this.store.dispatch(createCredential({ payload: { email: this.cleanEmail(this.form.value.email) } }));
   }
 
   public next(): void {

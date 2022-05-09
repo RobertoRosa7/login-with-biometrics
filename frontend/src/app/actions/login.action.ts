@@ -54,3 +54,7 @@ export const createCredential = createAction(
 export const createCredentialSuccess = createAction(
   LoginTypes.createCredentialSuccess, props<{ payload: any }>()
 )
+
+export const createCredentialError = createAction(
+  LoginTypes.createCredentialError, props<{ payload: any }>()
+)

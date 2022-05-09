@@ -5,6 +5,7 @@ const busboyConnect = require('connect-busboy');
 const busboyBodyParser = require('busboy-body-parser');
 const session = require('express-session');
 const utils = require('./util');
+const base64url = require('base64url');
 
 app.use(session({
   secret: 'keyboard',
@@ -37,24 +38,25 @@ app.post('/login/login-with-password', async (req, res) => {
   return res.status(200).json({ error: false, message: "login realizado com sucesso.", user: session.user });
 });
 
-app.get('/login/create-challenge', (req, res) => {
-  if (!session.user) {
+app.post('/login/request-challenge', (req, res) => {
+  if (!req.body.email) {
     return res.status(405).json({ error: true, message: 'Nenhuma sessão iniciada' });
   }
 
-  const createChallenge = utils.generateServerMakeRequest({
-    displayName: session.user.name,
-    id: session.user.id,
-    name: session.user.email
+  const user = utils.createUserSession(req.body.email);
+  const publicKey = utils.generateServerMakeRequest({
+    displayName: user.name,
+    id: user.id,
+    username: user.email
   });
-
-  session.user.challenge = createChallenge.challenge
+  session.user = user;
+  session.user.publicKey = publicKey;
 
   return res.status(200).json({
     error: false,
     message: "publicKey criada com sucesso",
     user: session.user,
-    createChallenge,
+    publicKey,
   });
 });
 
@@ -75,6 +77,38 @@ app.post('/login/verify-email', async (req, res) => {
   }
 
   return res.status(200).json({ error: false, message: "E-mail encontrado", user: session.user });
+});
+
+app.post('/login/verify-attestaion', async (req, res) => {
+  let result;
+  const user = session.user;
+
+  if (!req.body || !req.body.id || !req.body.response) {
+    return res.status(405).json({ message: 'Não foi possível registrar biometria', error: true });
+  }
+
+  try {
+    const webauthnResp = req.body;
+    const clientData = JSON.parse(base64url.decode(webauthnResp.response.clientDataJSON));
+
+    if (clientData.origin !== req.headers.origin) {
+      return res.status(405).json({ message: 'credencial inválida - origin client', error: true });
+    }
+
+    if (!user.publicKey || user.publicKey.challenge !== clientData.challenge) {
+      return res.status(405).json({ message: 'credencial inválida - challenge', error: true });
+    }
+
+    if (webauthnResp.response.attestationObject !== undefined) {
+      result = utils.verifyAuthenticatorAttestationResponse(webauthnResp.response);
+    } else {
+      return res.status(405).json({ message: 'credencial inválida - type of response', error: true });
+    }
+    return res.status(201).json({ message: "Biometria cadastrada", error: false, result });
+  } catch (e) {
+    console.log(e);
+    return res.status(405).json({ message: "Erro ao fazer registro biométrico", error: true, e });
+  }
 });
 
 app.listen(app.get('port'), () => {

@@ -4,6 +4,7 @@ const cbor = require('cbor');
 const { Certificate } = require('@fidm/x509');
 const iso_3166_1 = require('iso-3166-1');
 const NodeRSA = require('node-rsa');
+const uuid = require('uuid');
 
 const COSEKEYS = {
   'kty': 1,
@@ -52,8 +53,9 @@ const COSEALGHASH = {
 }
 
 const randomBase64URLBuffer = (len = 32) => {
-  const text = crypto.randomBytes(len);
-  const encodebuff = new Buffer.from(text.toString(), 'utf-8');
+  // const text = crypto.randomBytes(len);
+  const id = uuid.v1();
+  const encodebuff = new Buffer.from(id, 'utf-8');
   return encodebuff.toString('base64');
 }
 

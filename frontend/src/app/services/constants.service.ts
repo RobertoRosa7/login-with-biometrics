@@ -6,10 +6,8 @@ export class Constants {
     signup: '/login/signup',
     signin: '/login/signin',
     verifyEmail: '/login/verify-email',
-    requestChallenge: '/login/request-challenge',
-    loginWithPassword: '/login/login-with-password',
-    validateEmailOnLogin: '/login/validate-email-on-login',
-    signInWithBiometric: '/login/sigin-with-biometric',
+    createCredential: '/login/request-challenge',
+    verifyAttestaion: '/login/verify-attestaion',
   };
 
   private readonly host: string = environment.api;

@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of } from 'rxjs';
-import { catchError, exhaustMap, map, mergeMap } from 'rxjs/operators';
-import { createCredentialSuccess, loginWithPasswordError, loginWithPasswordSuccess, signinWithPasswordError, signinWithPasswordSuccess, verifyEmailError, verifyEmailSuccess } from '../actions/login.action';
+import { of, from } from 'rxjs';
+import { catchError, exhaustMap, map, mergeMap, switchMap } from 'rxjs/operators';
+import { createCredentialError, createCredentialSuccess, loginWithPasswordError, loginWithPasswordSuccess, signinWithPasswordError, signinWithPasswordSuccess, verifyEmailError, verifyEmailSuccess } from '../actions/login.action';
 import { LoginService } from '../services/login.service';
 import { LoginTypes } from '../types/login.type';
 
@@ -47,10 +47,12 @@ export class LoginEffect {
   public createCredential$ = createEffect(() =>
     this.action.pipe(ofType(LoginTypes.createCredential),
       mergeMap(({ payload }) => this.loginService.createCredential(payload).pipe(catchError((e) => of(e)))),
-      exhaustMap((payload: any) => this.loginService.createOptionsCredential(payload)),
+      exhaustMap(({ publicKey }: any) => from(this.loginService.createOptionsCredential({ publicKey })).pipe(catchError(e => of(e)))),
+      switchMap((payload: PublicKeyCredential) => this.loginService.verifyAttestation(payload)),
       map((payload) => {
-        this.loginService.saveCredential(payload);
-
+        if (payload instanceof HttpErrorResponse) {
+          return createCredentialError({ payload });
+        }
         return createCredentialSuccess({ payload });
       }),
     ));

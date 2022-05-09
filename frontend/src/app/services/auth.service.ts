@@ -69,16 +69,13 @@ export class AuthService {
     return this.b64encode(window.crypto.getRandomValues(new Uint32Array(len)))
   }
 
-  public preFormatMakeCredReq(payload: any): CredentialCreationOptions {
+  public preFormatMakeCredReq({ publicKey }: any): CredentialCreationOptions {
     return {
       publicKey: {
-        ...payload,
-        challenge: this.b64decode(payload.challenge),
-        user: { ...payload.user, id: this.b64decode(payload.user.id) }
+        ...publicKey,
+        challenge: this.b64decode(publicKey.challenge),
+        user: { ...publicKey.user, id: this.b64decode(publicKey.user.id) }
       }
     }
-  }
-
-  public verifyAttestation(payload: any) {
   }
 }

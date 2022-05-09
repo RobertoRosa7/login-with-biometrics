@@ -16,5 +16,6 @@ export enum LoginTypes {
 
   createCredential = 'login:CREATE_CREDENTIAL',
   createCredentialSuccess = 'login:CREATE_CREDENTIAL_SUCCESS',
+  createCredentialError = 'login:CREATE_CREDENTIAL_ERROR',
 
 }

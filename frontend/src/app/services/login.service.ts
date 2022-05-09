@@ -32,8 +32,6 @@ export class LoginService {
         return { user, message: 'E-mail encontrado', error: false }
       })
     )
-
-    // return this.http.post<VERIFY_EMAIL_RESPONSE>(this.constants.get('verifyEmail'), payload);
   }
 
   public loginWithPassword(payload: LOGIN_WITH_PASSWORD): Observable<any> {
@@ -92,19 +90,14 @@ export class LoginService {
     this.router.navigateByUrl('/');
   }
 
-  public createCredential(email: string): Observable<any> {
-    const publicKey = this.authService.createPublicKey({
-      displayName: 'Anonimous',
-      id: this.authService.toBase64(email),
-      username: email
-    });
-    return of(publicKey)
+  public createCredential(payload: { emaiL: string }): Observable<any> {
+    return this.http.post(this.constants.get('createCredential'), payload);
   }
 
-  public async createOptionsCredential(publicKey: CredentialCreationOptions): Promise<any> {
+  public async createOptionsCredential(publicKey: CredentialCreationOptions): Promise<PublicKeyCredential> {
     const error = new HttpErrorResponse({ error: { message: 'Não foi possível cadastrar', error: true } });
     try {
-      const credential = await navigator.credentials.create(this.authService.preFormatMakeCredReq(publicKey));
+      const credential = await navigator.credentials.create(this.authService.preFormatMakeCredReq(publicKey)) as PublicKeyCredential;
       if (!credential) {
         throw error;
       }
@@ -114,125 +107,33 @@ export class LoginService {
     }
   }
 
-  public saveCredential(credential:any) {
-    this.authService.verifyAttestation(credential);
+  public saveCredential(credential: any) {
+  }
+
+  public verifyAttestation(payload: PublicKeyCredential): Observable<any> {
+    return this.http.post(this.constants.get('verifyAttestaion'), this.publicKeyCredentialToJson(payload));
+  }
+
+  public publicKeyCredentialToJson(payload: any) {
+    return {
+      authenticatorAttachment: payload.authenticatorAttachment,
+      id: payload.id,
+      rawId: this.authService.b64encode(payload.rawId),
+      response: {
+        attestationObject: this.authService.b64encode(payload.response.attestationObject),
+        clientDataJSON: this.authService.b64encode(payload.response.clientDataJSON),
+      },
+      type: payload.type
+    }
+  }
+
+  public preventSilentAccess(): Promise<any> {
+    return navigator.credentials.preventSilentAccess();
   }
 
   private setUserOnStorageAfterLogin(user: any): void {
     localStorage.setItem('sessionUser', JSON.stringify(user));
   }
-
-  // public createLogin(payload: CreateLogin): Observable<any> {
-  //   return this.http.get(`${this.cons.get('signin')}`, this.setCredentialHeaders(payload)).pipe(
-  //     tap((user: any) => {
-  //       if (!user.error) {
-  //         this.setUserOnStorageAfterLogin(user);
-  //         // this.createSwPush(user);
-  //       }
-  //     })
-  //   )
-  // }
-
-  // public validateTokenFromVerified(payload: ValidateTokenFromVerified): Observable<any> {
-  //   return this.http.post(this.cons.get('validateTokenFromVerified'), payload);
-  // }
-
-  // public sendTokenToVerified(payload: SendTokenToVerified): Observable<any> {
-  //   return this.http.post(this.cons.get('sendTokenToVerified'), payload).pipe(
-  //     tap((res: any): void => this.setCipherOnLocalStorage(res)),
-  //   );
-  // }
-
-  // public setStepToVerifiedCode(payload: any): void {
-  //   this.removeFromLocalStorage('form');
-  //   this.localstorageService.set('form', payload);
-  // }
-
-  // public getLocalCipher(): null | FormCipher {
-  //   return this.localstorageService.get('form') ? JSON.parse(this.localstorageService.get('form') || '') : null;
-  // }
-
-  // public removeFromLocalStorage(item: string): void {
-  //   this.localstorageService.remove(item);
-  // }
-
-  // public getToken(): string | null {
-  //   return this.localstorageService.get('token') ? this.localstorageService.get('token') : null;
-  // }
-
-  // public isAccessAuthorized(): Observable<boolean> {
-  //   return this.localstorageService.getAsync('userDashboard').pipe(
-  //     map(userDash => this.utils.isNotEmptyObject(userDash))
-  //   )
-  // }
-
-  // public isAuthenticated(): Observable<boolean> {
-  //   if (this.getToken()) {
-  //     this.isLogin$.next(true);
-  //   }
-  //   return this.isLogin$.asObservable();
-  // }
-
-  // public logoutDashboard(message = 'Você saiu da sua conta'): void {
-  //   this.setCleanAfterLogout(message);
-  // }
-
-  // public logout(message = 'Você saiu da sua conta') {
-  //   this.setCleanAfterLogout(message);
-  // }
-
-  // public logoutAsObservable(message = 'Você saiu da sua conta'): Observable<boolean> {
-  //   this.setCleanAfterLogout(message);
-  //   return this.isLogin$.asObservable();
-  // }
-
-  // public requestVenonToken(payload: RequestVenonToken): Observable<any> {
-  //   return this.http.post(this.cons.get('requestVenonToken'), this.utils.createMarvelPayload('venon_token', payload))
-  // }
-
-  // public validateVenonToken(payload: any): Observable<any> {
-  //   return this.http.get(`${this.cons.get('validateVenonToken')}/${payload}`).pipe(
-  //     tap((res: any) => {
-  //       if (!res.error) {
-  //         this.localstorageService.ironManToken$.next(res);
-  //       }
-  //     })
-  //   )
-  // }
-
-  // public updatePasswordUser(payload: any): Observable<any> {
-  //   return this.http.post(this.cons.get('updatePasswordUser'), this.utils.createMarvelPayload('update_password_user', payload))
-  // }
-
-  // public credential(payload: CreateLogin): Observable<any> {
-  //   return this.localstorageService.getAsync('token').pipe(
-  //     mergeMap(({ access_token }) => this.http.get(
-  //       `${this.cons.get('authCredential')}`,
-  //       this.mergeTokenAndCredential(access_token, payload)
-  //     ))
-  //   )
-  // }
-
-  // public salonLogin(payload: any): Observable<any> {
-  //   return this.http.get(`${this.cons.get('salonLogin')}`, this.setCredentialHeaders(payload)).pipe(
-  //     tap((user: any) => {
-  //       if (!user.error) {
-  //         this.setAdminOnStorageAfterLogin(user)
-  //       }
-  //     })
-  //   )
-  // }
-
-  // public requestChallenge(payload: REQUEST_CHALLENGE): Observable<any> {
-  //   return this.localstorageService.getAsync('token').pipe(
-  //     delay(1000),
-  //     mergeMap(({ access_token }) => this.http.post(
-  //       this.cons.get('requestChallenge'),
-  //       payload,
-  //       this.returnHeaderTokenClient(access_token)
-  //     )),
-  //   )
-  // }
 
   // public async getCredential(client: CLIENT) {
   //   const error = new HttpErrorResponse({ error: { message: 'Biometria inválida', error: true } });
@@ -267,55 +168,8 @@ export class LoginService {
   //   )
   // }
 
-  // public preventSilentAccess(): Promise<any> {
-  //   return navigator.credentials.preventSilentAccess();
-  // }
-
-  // public validateEmailOnLogin(payload: { email: string }): Observable<VALIDATE_EMAIL_RESPONSE> {
-  //   return this.http.post<VALIDATE_EMAIL_RESPONSE>(this.cons.get('validateEmailOnLogin'), payload);
-  // }
-
-  // private setCipherOnLocalStorage(response: any): void {
-  //   if (!response.error) {
-  //     this.setStepToVerifiedCode({ create: { step: 2, cipher: response.cipher } });
-  //   }
-  // }
-
-  // private createSwPush(user: any): void {
-  //   if (!this.swPush.isEnabled) {
-  //     from(this.swPush.requestSubscription({ serverPublicKey: environment.publicVapiKey })).pipe(
-  //       mergeMap((push: PushSubscription) =>
-  //         this.homeService.createSwPush({ client_id: user.data._id, push_notification: push }))).subscribe()
-  //   }
-  // }
-
   // private setAdminOnStorageAfterLogin(user: any): void {
   //   this.localstorageService.set('userDashboard', user.data);
   //   this.accessAuthorized$.next(true);
-  // }
-
-
-
-  // private setCleanAfterLogout(message?: any): void {
-  //   this.localstorageService.remove('user');
-  //   this.localstorageService.remove('token');
-  //   this.localstorageService.remove('sessionFinished');
-  //   this.localstorageService.remove('userDashboard');
-
-  //   this.store.dispatch(clearLogin());
-  //   this.store.dispatch(clearClient());
-  //   this.store.dispatch(resetScheduling());
-
-  //   this.contributorService.cleanCache();
-  //   this.mainService.cleanCache();
-  //   this.serviceService.cleanCache();
-  //   this.clientService.cleanCache();
-  //   this.preventSilentAccess().then();
-
-  //   this.isLogin$.next(false);
-  //   this.accessAuthorized$.next(false);
-
-  //   this.snackbar.open(message, 'ok', { duration: 3000 });
-  //   this.router.navigateByUrl('/home');
   // }
 }
