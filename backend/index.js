@@ -23,61 +23,61 @@ app.get('/', (req, res) => {
   return res.status(200).json({ error: false, message: "it's working" });
 });
 
-app.post('/login/login-with-password', async (req, res) => {
-  if (!req.body || !req.body.email || !req.body.password) {
-    return res.status(405).json({ error: true, message: "acesso não permitido" });
-  }
+// app.post('/login/login-with-password', async (req, res) => {
+//   if (!req.body || !req.body.email || !req.body.password) {
+//     return res.status(405).json({ error: true, message: "acesso não permitido" });
+//   }
 
-  const { email } = req.body;
+//   const { email } = req.body;
 
-  if (session.user.email !== email) {
-    return res.status(405).json({ error: true, message: 'e-mail não cadastrado' });
-  }
+//   if (session.user.email !== email) {
+//     return res.status(405).json({ error: true, message: 'e-mail não cadastrado' });
+//   }
 
-  session.user = utils.createUserSession(email);
-  return res.status(200).json({ error: false, message: "login realizado com sucesso.", user: session.user });
-});
+//   session.user = utils.createUserSession(email);
+//   return res.status(200).json({ error: false, message: "login realizado com sucesso.", user: session.user });
+// });
 
-app.post('/login/request-challenge', (req, res) => {
-  if (!req.body.email) {
-    return res.status(405).json({ error: true, message: 'Nenhuma sessão iniciada' });
-  }
+// app.post('/login/request-challenge', (req, res) => {
+//   if (!req.body.email) {
+//     return res.status(405).json({ error: true, message: 'Nenhuma sessão iniciada' });
+//   }
 
-  const user = utils.createUserSession(req.body.email);
-  const publicKey = utils.generateServerMakeRequest({
-    displayName: user.name,
-    id: user.id,
-    username: user.email
-  });
-  session.user = user;
-  session.user.publicKey = publicKey;
+//   const user = utils.createUserSession(req.body.email);
+//   const publicKey = utils.generateServerMakeRequest({
+//     displayName: user.name,
+//     id: user.id,
+//     username: user.email
+//   });
+//   session.user = user;
+//   session.user.publicKey = publicKey;
 
-  return res.status(200).json({
-    error: false,
-    message: "publicKey criada com sucesso",
-    user: session.user,
-    publicKey,
-  });
-});
+//   return res.status(200).json({
+//     error: false,
+//     message: "publicKey criada com sucesso",
+//     user: session.user,
+//     publicKey,
+//   });
+// });
 
-app.post('/login/signin', async (req, res) => {
-  return res.status(200).json({ error: false, message: "it's working", user: session.user, createChallenge });
-});
+// app.post('/login/signin', async (req, res) => {
+//   return res.status(200).json({ error: false, message: "it's working", user: session.user, createChallenge });
+// });
 
-app.post('/login/verify-email', async (req, res) => {
+// app.post('/login/verify-email', async (req, res) => {
 
-  if (!req.body || !req.body.email) {
-    return res.status(405).json({ error: true, message: 'Nenhum email recebido' });
-  }
+//   if (!req.body || !req.body.email) {
+//     return res.status(405).json({ error: true, message: 'Nenhum email recebido' });
+//   }
 
-  const { email } = req.body;
+//   const { email } = req.body;
 
-  if (!session.user) {
-    session.user = utils.createUserSession(email);
-  }
+//   if (!session.user) {
+//     session.user = utils.createUserSession(email);
+//   }
 
-  return res.status(200).json({ error: false, message: "E-mail encontrado", user: session.user });
-});
+//   return res.status(200).json({ error: false, message: "E-mail encontrado", user: session.user });
+// });
 
 app.post('/login/verify-attestaion', async (req, res) => {
   let result;
