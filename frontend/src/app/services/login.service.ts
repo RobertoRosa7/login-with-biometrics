@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, map, Observable, of } from 'rxjs';
+import { BehaviorSubject, map, mergeMap, Observable, of, tap } from 'rxjs';
 import { LOGIN_WITH_PASSWORD, VERIFY_EMAIL } from '../interfaces/login.interface';
 import { AuthService } from './auth.service';
 import { Constants } from './constants.service';
@@ -38,6 +38,7 @@ export class LoginService {
     return this.indexedbService.create({
       email: payload.email,
       id: this.authService.toBase64(payload.email),
+      hasBiometrics: false,
       password: this.authService.b64encode(
         this.authService.b64decode(
           this.authService.toBase64(payload.password)
@@ -87,10 +88,11 @@ export class LoginService {
   public logout(): void {
     localStorage.removeItem('sessionUser');
     this.authorized$.next(false);
+    this.preventSilentAccess().then();
     this.router.navigateByUrl('/');
   }
 
-  public createCredential(payload: { emaiL: string }): Observable<any> {
+  public createCredential(payload: { email: string }): Observable<any> {
     return this.http.post(this.constants.get('createCredential'), payload);
   }
 
@@ -107,11 +109,28 @@ export class LoginService {
     }
   }
 
-  public saveCredential(credential: any) {
-  }
-
   public verifyAttestation(payload: PublicKeyCredential): Observable<any> {
     return this.http.post(this.constants.get('verifyAttestaion'), this.publicKeyCredentialToJson(payload));
+  }
+
+  public getAssertation(assertation: any, { credential }: any): Observable<any> {
+    return this.http.post(this.constants.get('gerAssertation'), {
+      assertation: this.authService.preFormatAssertion(assertation),
+      publicKey: credential.authrInfo
+    }).pipe(tap(({ user }: any) => this.setUserOnStorageAfterLogin(user)));
+  }
+
+  public async getUserCredential(publicKey: CredentialCreationOptions): Promise<any> {
+    const error = new HttpErrorResponse({ error: { message: 'Não foi possível cadastrar', error: true } });
+    try {
+      const credential = await navigator.credentials.get(this.authService.preFormatMakeCredReq(publicKey));
+      if (!credential) {
+        throw error;
+      }
+      return credential;
+    } catch (e) {
+      throw error;
+    }
   }
 
   public publicKeyCredentialToJson(payload: any) {
@@ -131,45 +150,30 @@ export class LoginService {
     return navigator.credentials.preventSilentAccess();
   }
 
+  public updateOrCreateUser(credential: any, email: any): Observable<any> {
+    const id = this.authService.toBase64(email);
+    return this.indexedbService.getById(id).pipe(
+      mergeMap((user: any) => {
+        if (user) {
+          const newUser = { ...user, credential, hasBiometrics: true };
+          this.setUserOnStorageAfterLogin(newUser);
+          return this.indexedbService.update(newUser);
+        } else {
+          const newUser = { id, email, password: null, credential, hasBiometrics: true };
+          this.setUserOnStorageAfterLogin(newUser);
+          return this.indexedbService.create(newUser);
+        }
+      })
+    )
+  }
+
+  public signinWithBiometrics(payload: any): Observable<any> {
+    console.log(payload);
+
+    return of(payload)
+  }
+
   private setUserOnStorageAfterLogin(user: any): void {
     localStorage.setItem('sessionUser', JSON.stringify(user));
   }
-
-  // public async getCredential(client: CLIENT) {
-  //   const error = new HttpErrorResponse({ error: { message: 'Biometria inválida', error: true } });
-  //   try {
-  //     const credential = await navigator.credentials.get(this.preFormatMakeCredReq(client.public_key));
-  //     if (!credential) {
-  //       throw error;
-  //     }
-  //     return { credential, client };
-  //   } catch (e) {
-  //     throw error;
-  //   }
-  // }
-
-  // public sendWebAuthnResponse(payload: any): Observable<any> {
-  //   return this.localstorageService.getAsync('token').pipe(
-  //     mergeMap(({ access_token }) => this.http.post(
-  //       this.cons.get('sendWebAuthnResponse'),
-  //       this.publicKeyCredentialToJson(payload),
-  //       this.returnHeaderTokenClient(access_token)
-  //     ))
-  //   )
-  // }
-
-  // public signInWithBiometric(payload: any): Observable<any> {
-  //   return this.http.post(this.cons.get('signInWithBiometric'), this.createAssertionResponse(payload)).pipe(
-  //     tap((user: any) => {
-  //       if (!user.error) {
-  //         this.setUserOnStorageAfterLogin(user);
-  //       }
-  //     })
-  //   )
-  // }
-
-  // private setAdminOnStorageAfterLogin(user: any): void {
-  //   this.localstorageService.set('userDashboard', user.data);
-  //   this.accessAuthorized$.next(true);
-  // }
 }

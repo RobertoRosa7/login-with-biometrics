@@ -14,8 +14,10 @@
               <input formControlName="email" name="email" type="email" required matInput placeholder="E-mail">
               <mat-error *ngIf="form.get('email')?.hasError('required')">E-mail é obrigatório</mat-error>
               <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail é inválido</mat-error>
-              <mat-error *ngIf="verifyError$ | async as response">{{response.error.message}}</mat-error>
-              <mat-hint style="color: black;" *ngIf="verifySuccess$ | async as response">
+              <mat-error *ngIf="responseError$ | async as response">
+                {{response.error.message}}
+              </mat-error>
+              <mat-hint style="color: black;" *ngIf="responseSuccess$ | async as response">
                 {{response.message}}
               </mat-hint>
             </mat-form-field>
@@ -41,6 +43,9 @@
               </mat-hint>
               <mat-error *ngIf="signinWithPasswordError$ | async as response">{{response.error.message}}</mat-error>
               <mat-hint style="color: black;" *ngIf="signinWithPasswordSuccess$ | async as response">
+                {{response.message}}
+              </mat-hint>
+              <mat-hint style="color: black;" *ngIf="createCredentialSuccess$ | async as response">
                 {{response.message}}
               </mat-hint>
             </mat-form-field>

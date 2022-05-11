@@ -8,6 +8,7 @@ export class Constants {
     verifyEmail: '/login/verify-email',
     createCredential: '/login/request-challenge',
     verifyAttestaion: '/login/verify-attestaion',
+    gerAssertation: '/login/verify-assertation'
   };
 
   private readonly host: string = environment.api;

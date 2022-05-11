@@ -14,6 +14,10 @@ export enum LoginTypes {
   signinWithPasswordSuccess = '@login:SIGNIN_WITH_PASSWORD_SUCCESS',
   signinWithPasswordError = '@login:SIGNIN_WITH_PASSWORD_ERROR',
 
+  signinWithBiometrics = '@login:SIGNIN_BIOMETRICS_PASSWORD',
+  signinWithBiometricsdSuccess = '@login:SIGNIN_BIOMETRICS_PASSWORD_SUCCESS',
+  signinWithBiometricsError = '@login:SIGNIN_BIOMETRICS_PASSWORD_ERROR',
+
   createCredential = 'login:CREATE_CREDENTIAL',
   createCredentialSuccess = 'login:CREATE_CREDENTIAL_SUCCESS',
   createCredentialError = 'login:CREATE_CREDENTIAL_ERROR',

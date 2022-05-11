@@ -58,3 +58,15 @@ export const createCredentialSuccess = createAction(
 export const createCredentialError = createAction(
   LoginTypes.createCredentialError, props<{ payload: any }>()
 )
+
+export const signinWithBiometrics = createAction(
+  LoginTypes.signinWithBiometrics, props<{ payload: any }>()
+)
+
+export const signinWithBiometricsdSuccess = createAction(
+  LoginTypes.signinWithBiometricsdSuccess, props<{ payload: any }>()
+)
+
+export const signinWithBiometricsError = createAction(
+  LoginTypes.signinWithBiometricsError, props<{ payload: any }>()
+)

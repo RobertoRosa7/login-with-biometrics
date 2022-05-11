@@ -111,6 +111,45 @@ app.post('/login/verify-attestaion', async (req, res) => {
   }
 });
 
+app.post('/login/verify-assertation', async (req, res) => {
+  if (!req.body) {
+    return res.status(405).json({ message: 'Não match fingerprint', error: true });
+  }
+
+  const webauthnResp = req.body.assertation;
+  const authenticators = req.body.publicKey;
+  const user = session.user;
+  const clientData = JSON.parse(base64url.decode(webauthnResp.response.clientDataJSON));
+
+  if (!clientData) {
+    return res.status(405).json({ message: 'Não foi possível reconhecer credencial', error: true });
+  }
+
+  if (clientData.type !== 'webauthn.get') {
+    return res.status(405).json({ message: 'método de autenticação inválido', error: true });
+  }
+
+  if (clientData.challenge !== user.publicKey.challenge) {
+    return res.status(405).json({ message: 'Não foi possível reconhecer credencial', error: true });
+  }
+
+  if (req.headers.origin !== clientData.origin) {
+    return res.status(405).json({ message: 'Credencial com origem diferente', error: true });
+  }
+
+  try {
+    const result = utils.verifyAuthenticatorAssertionResponse(webauthnResp.response, authenticators);
+
+    if (!result || !result.verified) {
+      return res.status(405).json({ message: 'credencial inválida', error: true });
+    }
+
+    return res.status(200).json({ message: 'Login realizado com successo.', error: false, user });
+  } catch (e) {
+    return res.status(405).json({ message: 'Não foi possível fazer autenticação', error: true });
+  }
+})
+
 app.listen(app.get('port'), () => {
   console.log(`The server is running on: ${app.get('port')}`);
   console.log('TimeZone: ', new Date().toString());

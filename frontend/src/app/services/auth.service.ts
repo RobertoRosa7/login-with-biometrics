@@ -78,4 +78,19 @@ export class AuthService {
       }
     }
   }
+
+  public preFormatAssertion(payload: any) {
+    return {
+      id: payload.id,
+      type: payload.type,
+      rawId: this.b64encode(payload.rawId),
+      challenge: payload.challenge,
+      response: {
+        clientDataJSON: this.b64encode(payload.response.clientDataJSON),
+        authenticatorData: this.b64encode(payload.response.authenticatorData),
+        signature: this.b64encode(payload.response.signature),
+        userHandle: this.b64encode(payload.response.userHandle)
+      },
+    }
+  }
 }
